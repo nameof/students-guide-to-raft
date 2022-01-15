@@ -42,7 +42,7 @@ Figure 2定义了每个server应该做什么，在每个状态，对每个即将
 
 ### **细节的重要性(The importance of details)**
 
-为了使讨论更加具体，让我们来考虑一个绊住了许多6.824学生的例子。Raft论文在很多地方都提及了**心跳(heartbeat) RPC**。具体来说，一个leader会不定期(每个心跳间隔内至少一次)向所有的peers发出一个`AppendEntries` RPC以组织他们开启新一轮选举。如果leader没有新的条目要发生给特定的peer，`AppendEntries` RPC就不包含任何条目，且被当做是一个心跳(消息)。
+为了使讨论更加具体，让我们来考虑一个绊住了许多6.824学生的例子。Raft论文在很多地方都提及了**心跳(heartbeat) RPC**。具体来说，一个leader会不定期(每个心跳间隔内至少一次)向所有的peers发出一个`AppendEntries` RPC以阻止他们开启新一轮选举。如果leader没有新的条目要发生给特定的peer，`AppendEntries` RPC就不包含任何条目，且被当做是一个心跳(消息)。
 
 我们的学生中很多人认为心跳消息是“特殊的(special)”；当一个peer收到一个心跳消息的时候，它应该把这个消息当做不同于一个非心跳的`AppendEntries` RPC来处理。具体来说，当收到一个心跳消息的时候，它们(译者注：指peers)简单地重置其选举定时器，然后返回成功，而没有执行任何Figure 2中要求的检查。这是**相当危险**的。通过接受RPC，follower隐式地告诉leader它们的日志和leader的日志一直到且包括`AppendEntries`参数中的`prevLogIndex`都是匹配的。一旦收到回复，leader可能就认为(不正确地)，某个条目已经被复制到servers中的大多数，然后开始提交。
 
